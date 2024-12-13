@@ -5,11 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Repository Options</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .button { padding: 10px 20px; background-color: #f1c6d3; border: none; cursor: pointer; }
-        #optionsPanel { display: none; margin-top: 20px; }
-        ul { list-style-type: none; padding: 0; }
-        li { margin: 10px 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #ff4da6;
+            text-align: center;
+        }
+
+        .button {
+            padding: 10px 20px;
+            background-color: #ff80bf;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            border-radius: 5px;
+        }
+
+        .button:hover {
+            background-color: #ff4da6;
+        }
+
+        #optionsPanel {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #repoList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #repoList li {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        #repoList li:hover {
+            transform: scale(1.05);
+        }
+
+        .repo-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff4da6;
+        }
+
+        .repo-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .repo-info a {
+            color: #ff4da6;
+            text-decoration: none;
+        }
+
+        .repo-info img {
+            max-width: 50px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -58,22 +127,15 @@
                     .then(response => response.json())
                     .then(data => {
                         const listItem = document.createElement('li');
-                        listItem.innerHTML = `<strong>${repo[0]}</strong>: <a href="${repo[1]}" target="_blank">Visit</a>`;
-                        
-                        // If the JSON contains specific info, display it
-                        if (data.name) {
-                            listItem.innerHTML += `<br>Repo Name: ${data.name}`;
-                        }
-                        if (data.subtitle) {
-                            listItem.innerHTML += `<br>Subtitle: ${data.subtitle}`;
-                        }
-                        if (data.downloadURL) {
-                            listItem.innerHTML += `<br>Download URL: <a href="${data.downloadURL}" target="_blank">Download</a>`;
-                        }
-                        if (data.iconURL) {
-                            listItem.innerHTML += `<br><img src="${data.iconURL}" alt="Icon" width="50" height="50">`;
-                        }
-                        
+                        listItem.innerHTML = `
+                            <div class="repo-title">${repo[0]}</div>
+                            <div class="repo-info">
+                                <strong>Repo Name:</strong> ${data.name || 'N/A'}<br>
+                                <strong>Subtitle:</strong> ${data.subtitle || 'N/A'}<br>
+                                <strong>Download:</strong> <a href="${data.downloadURL || '#'}" target="_blank">${data.downloadURL ? 'Click Here' : 'Not Available'}</a><br>
+                                ${data.iconURL ? `<img src="${data.iconURL}" alt="Icon">` : ''}
+                            </div>
+                        `;
                         repoList.appendChild(listItem);
                     })
                     .catch(error => {
