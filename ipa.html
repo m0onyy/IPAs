@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoonyDev - IPA Repositories</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #fff0f5;
+            color: #4a154b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+        }
+        .panel {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ff66b2;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .panel a {
+            display: block;
+            margin: 10px 0;
+            color: #ff3399;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #ff66b2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #ff3399;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MoonyDev - IPA Repositories</h1>
+        <button onclick="togglePanel()">Repository Options</button>
+        <div class="panel" id="repoPanel">
+            <!-- Repositories will be dynamically added here -->
+        </div>
+        <div class="result" id="jsonResult" style="display: none;">
+            <h3>Repository Details:</h3>
+            <p id="repoName"></p>
+            <p id="repoSubtitle"></p>
+            <p><a id="repoDownload" href="#" target="_blank">Download</a></p>
+            <img id="repoIcon" src="" alt="Repository Icon" style="max-width: 100px;">
+        </div>
+    </div>
+    <script>
+        const repositories = [
+            ["AppTesters IPA Repo", "https://repo.apptesters.org/"],
+            ["CyPwn IPA Library", "https://ipa.cypwn.xyz/cypwn.json"],
+            ["CyPwn Trollstore Library", "https://ipa.cypwn.xyz/cypwn_ts.json"],
+            ["MovieBoxPro for AltStore", "https://hann8n.github.io/JackCracks/MovieboxPro.json"],
+            ["Panda App Ru++", "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json"],
+            ["QingSongQian's Repository", "https://qingsongqian.github.io/all.html"],
+            ["Qn_'s AltStore Repo", "https://qnblackcat.github.io/AltStore/apps.json"],
+            ["RandomSource", "https://randomblock1.com/altstore/apps.json"],
+            ["SideStore Team Picks", "https://community-apps.sidestore.io/sidecommunity.json"],
+            ["SpotCompiled", "https://tiny.one/SpotC"],
+            ["WuXu's Library", "https://wuxu1.github.io/wuxu-complete.json"],
+            ["WuXu's Library+)", "https://bit.ly/wuxuslibraryplus"],
+            ["WuXu's Library++", "https://wuxu1.github.io/wuxu-complete-plus.json"],
+            ["ThirdStore Full", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/mainRepo.json"],
+            ["ThirdSource", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/thirdsource.json"]
+        ];
+
+        function togglePanel() {
+            const panel = document.getElementById("repoPanel");
+            panel.style.display = panel.style.display === "block" ? "none" : "block";
+        }
+
+        function populatePanel() {
+            const panel = document.getElementById("repoPanel");
+            repositories.forEach(([name, url]) => {
+                const link = document.createElement("a");
+                link.textContent = name;
+                link.href = "#";
+                link.onclick = () => fetchRepoData(url);
+                panel.appendChild(link);
+            });
+        }
+
+        async function fetchRepoData(url) {
+            const resultDiv = document.getElementById("jsonResult");
+            resultDiv.style.display = "block";
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById("repoName").textContent = `Name: ${data.name || "N/A"}`;
+                document.getElementById("repoSubtitle").textContent = `Subtitle: ${data.subtitle || "N/A"}`;
+                document.getElementById("repoDownload").href = data.downloadURL || "#";
+                document.getElementById("repoDownload").textContent = "Download";
+                document.getElementById("repoIcon").src = data.iconURL || "";
+            } catch (error) {
+                alert("Failed to fetch repository data.");
+            }
+        }
+
+        window.onload = populatePanel;
+    </script>
+</body>
+</html>
