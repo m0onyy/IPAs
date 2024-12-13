@@ -3,143 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoonyDev - IPA Repositories</title>
+    <title>JSON Data Display</title>
     <style>
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
             background-color: #fff0f5;
             color: #4a154b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
+            margin: 0;
+            padding: 0;
             text-align: center;
+        }
+        h1 {
+            color: #ff66b2;
+        }
+        .json-container {
             max-width: 800px;
-        }
-        .panel {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ff66b2;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
             border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .panel a {
-            display: block;
-            margin: 10px 0;
-            color: #ff3399;
-            text-decoration: none;
-            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            white-space: pre-wrap;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
         }
         button {
-            padding: 10px 20px;
-            font-size: 1rem;
             background-color: #ff66b2;
             color: white;
             border: none;
-            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1.2em;
             cursor: pointer;
-            transition: background-color 0.3s;
+            border-radius: 5px;
+            margin-top: 20px;
         }
         button:hover {
             background-color: #ff3399;
         }
-        .json-data {
-            margin-top: 20px;
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            text-align: left;
-            white-space: pre-wrap;
-        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>MoonyDev - IPA Repositories</h1>
-        <button onclick="togglePanel()">Repository Options</button>
-        <div class="panel" id="repoPanel"></div>
-        <div class="json-data" id="jsonData"></div>
-    </div>
+    <h1>MoonyDev - IPA Repository Data</h1>
+    <button onclick="loadData()">Load JSON Data</button>
+    <div id="json-container" class="json-container"></div>
+
     <script>
-        const repositories = [
-            ["AppTesters IPA Repo", "https://repo.apptesters.org/"],
-            ["CyPwn IPA Library", "https://ipa.cypwn.xyz/cypwn.json"],
-            ["CyPwn Trollstore Library", "https://ipa.cypwn.xyz/cypwn_ts.json"]
-        ];
-
-        function togglePanel() {
-            const panel = document.getElementById("repoPanel");
-            panel.style.display = panel.style.display === "block" ? "none" : "block";
-        }
-
-        function populatePanel() {
-            const panel = document.getElementById("repoPanel");
-            repositories.forEach(([name, url]) => {
-                const link = document.createElement("a");
-                link.textContent = name;
-                link.href = "#";
-                link.onclick = () => fetchRepoData(url);
-                panel.appendChild(link);
-            });
-        }
-
-        async function fetchRepoData(url) {
-            const jsonDataDiv = document.getElementById("jsonData");
-            jsonDataDiv.innerHTML = ''; // Clear previous data
+        async function loadData() {
+            const url = "https://ipa.cypwn.xyz/cypwn.json"; // Your JSON URL
+            const container = document.getElementById("json-container");
 
             try {
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-                
-                // Parse the JSON response
                 const data = await response.json();
-                console.log("Fetched JSON data:", data); // Debug: inspect fetched JSON
 
-                // Display everything in the JSON object
-                displayAllData(data);
+                // Clear any previous content
+                container.innerHTML = "";
+
+                // Display JSON data in a formatted way
+                displayJson(data, container);
             } catch (error) {
-                console.error("Failed to fetch or parse repository data:", error);
-                alert("Could not load repository data. Check console for details.");
+                container.innerHTML = "Failed to load data.";
+                console.error("Error loading JSON:", error);
             }
         }
 
-        function displayAllData(data) {
-            const jsonDataDiv = document.getElementById("jsonData");
+        // Recursive function to display nested JSON data
+        function displayJson(data, container, indent = 0) {
+            if (typeof data === 'object' && !Array.isArray(data)) {
+                // Loop through the object properties
+                for (let key in data) {
+                    const value = data[key];
+                    const div = document.createElement("div");
+                    div.style.marginLeft = `${indent * 20}px`;
+                    div.innerHTML = `<strong>${key}:</strong>`;
 
-            // Create a recursive function to handle nested objects
-            function recursivelyDisplayData(obj, parentElement) {
-                for (const key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        const value = obj[key];
-                        const entryDiv = document.createElement("div");
+                    container.appendChild(div);
 
-                        // If the value is an object, recurse; if not, display the key-value pair
-                        if (typeof value === "object" && value !== null) {
-                            entryDiv.innerHTML = `<strong>${key}:</strong>`;
-                            recursivelyDisplayData(value, entryDiv); // Recursion for nested objects
-                        } else {
-                            entryDiv.innerHTML = `<strong>${key}:</strong> ${value}`;
-                        }
-
-                        parentElement.appendChild(entryDiv);
-                    }
+                    // Recursive call for nested objects
+                    displayJson(value, container, indent + 1);
                 }
+            } else if (Array.isArray(data)) {
+                // Loop through array items
+                data.forEach((item, index) => {
+                    const div = document.createElement("div");
+                    div.style.marginLeft = `${indent * 20}px`;
+                    div.innerHTML = `<strong>[${index}]:</strong>`;
+                    container.appendChild(div);
+
+                    // Recursive call for array items
+                    displayJson(item, container, indent + 1);
+                });
+            } else {
+                // Display primitive values
+                const div = document.createElement("div");
+                div.style.marginLeft = `${indent * 20}px`;
+                div.innerHTML = `${data}`;
+                container.appendChild(div);
             }
-
-            recursivelyDisplayData(data, jsonDataDiv); // Start recursion to display all data
         }
-
-        window.onload = populatePanel;
     </script>
 </body>
 </html>
