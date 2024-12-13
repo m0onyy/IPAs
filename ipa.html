@@ -69,15 +69,14 @@
             color: #666;
         }
 
-        .repo-info a {
-            color: #ff4da6;
-            text-decoration: none;
-        }
-
-        .repo-info img {
-            max-width: 50px;
-            border-radius: 5px;
-            margin-top: 5px;
+        #jsonOutput {
+            white-space: pre-wrap; /* Keeps formatting in raw JSON */
+            background-color: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'Courier New', monospace;
         }
     </style>
 </head>
@@ -88,6 +87,8 @@
     <div id="optionsPanel">
         <ul id="repoList"></ul>
     </div>
+
+    <div id="jsonOutput"></div>
 
     <script>
         const repositories = [
@@ -123,27 +124,41 @@
             repoList.innerHTML = ''; // Clear existing list items
 
             repositories.forEach(repo => {
-                fetch(repo[1])
-                    .then(response => response.json())
-                    .then(data => {
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `
-                            <div class="repo-title">${repo[0]}</div>
-                            <div class="repo-info">
-                                <strong>Repo Name:</strong> ${data.name || 'N/A'}<br>
-                                <strong>Subtitle:</strong> ${data.subtitle || 'N/A'}<br>
-                                <strong>Download:</strong> <a href="${data.downloadURL || '#'}" target="_blank">${data.downloadURL ? 'Click Here' : 'Not Available'}</a><br>
-                                ${data.iconURL ? `<img src="${data.iconURL}" alt="Icon">` : ''}
-                            </div>
-                        `;
-                        repoList.appendChild(listItem);
-                    })
-                    .catch(error => {
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `<strong>${repo[0]}</strong>: Failed to load data.`;
-                        repoList.appendChild(listItem);
-                    });
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div class="repo-title">${repo[0]}</div>
+                    <div class="repo-info">
+                        <button class="button" onclick="fetchRepoData('${repo[1]}')">Fetch Data</button>
+                    </div>
+                `;
+                repoList.appendChild(listItem);
             });
+        }
+
+        function fetchRepoData(url) {
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayRawJson(data);
+                })
+                .catch(error => {
+                    const jsonOutput = document.getElementById('jsonOutput');
+                    jsonOutput.textContent = 'Error fetching repository data.';
+                });
+        }
+
+        function displayRawJson(data) {
+            const jsonOutput = document.getElementById('jsonOutput');
+            jsonOutput.textContent = JSON.stringify(data, null, 2); // Display raw JSON data
+
+            // Optionally, extract apps and display them if they exist
+            if (data.apps) {
+                let appsList = '';
+                data.apps.forEach(app => {
+                    appsList += JSON.stringify(app, null, 2) + '\n\n';
+                });
+                jsonOutput.textContent = appsList; // Overwrite with just the apps in raw form
+            }
         }
     </script>
 </body>
