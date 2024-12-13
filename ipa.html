@@ -51,7 +51,7 @@
         button:hover {
             background-color: #ff3399;
         }
-        .app-list {
+        .json-data {
             margin-top: 20px;
             width: 100%;
             padding: 10px;
@@ -59,25 +59,7 @@
             background-color: #fff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: left;
-        }
-        .app-item {
-            margin-bottom: 15px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-        }
-        .app-item h3 {
-            margin: 5px 0;
-            color: #ff3399;
-        }
-        .app-item p {
-            margin: 3px 0;
-        }
-        .app-item a {
-            color: #4a154b;
-        }
-        .app-item img {
-            max-width: 100px;
-            margin-top: 10px;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -86,7 +68,7 @@
         <h1>MoonyDev - IPA Repositories</h1>
         <button onclick="togglePanel()">Repository Options</button>
         <div class="panel" id="repoPanel"></div>
-        <div class="app-list" id="appList"></div>
+        <div class="json-data" id="jsonData"></div>
     </div>
     <script>
         const repositories = [
@@ -112,8 +94,8 @@
         }
 
         async function fetchRepoData(url) {
-            const appListDiv = document.getElementById("appList");
-            appListDiv.innerHTML = ''; // Clear the list before adding new items
+            const jsonDataDiv = document.getElementById("jsonData");
+            jsonDataDiv.innerHTML = ''; // Clear previous data
 
             try {
                 const response = await fetch(url);
@@ -123,51 +105,38 @@
                 const data = await response.json();
                 console.log("Fetched JSON data:", data); // Debug: inspect fetched JSON
 
-                // Loop through each app in the JSON
-                data.forEach(app => {
-                    displayAppData(app);
-                });
+                // Display everything in the JSON object
+                displayAllData(data);
             } catch (error) {
                 console.error("Failed to fetch or parse repository data:", error);
                 alert("Could not load repository data. Check console for details.");
             }
         }
 
-        function displayAppData(app) {
-            const appListDiv = document.getElementById("appList");
+        function displayAllData(data) {
+            const jsonDataDiv = document.getElementById("jsonData");
 
-            // Create a div to display each app's details
-            const appDiv = document.createElement("div");
-            appDiv.classList.add("app-item");
+            // Create a recursive function to handle nested objects
+            function recursivelyDisplayData(obj, parentElement) {
+                for (const key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        const value = obj[key];
+                        const entryDiv = document.createElement("div");
 
-            // Title (name of the app)
-            const appName = document.createElement("h3");
-            appName.textContent = app.name || "Unknown App";
-            appDiv.appendChild(appName);
+                        // If the value is an object, recurse; if not, display the key-value pair
+                        if (typeof value === "object" && value !== null) {
+                            entryDiv.innerHTML = `<strong>${key}:</strong>`;
+                            recursivelyDisplayData(value, entryDiv); // Recursion for nested objects
+                        } else {
+                            entryDiv.innerHTML = `<strong>${key}:</strong> ${value}`;
+                        }
 
-            // Subtitle (description or additional info)
-            const appSubtitle = document.createElement("p");
-            appSubtitle.textContent = app.subtitle || "No description available.";
-            appDiv.appendChild(appSubtitle);
-
-            // Download link
-            const appDownload = document.createElement("p");
-            const downloadLink = document.createElement("a");
-            downloadLink.href = app.downloadURL || "#";
-            downloadLink.textContent = app.downloadURL ? "Download" : "No download available";
-            appDownload.appendChild(downloadLink);
-            appDiv.appendChild(appDownload);
-
-            // Icon (if available)
-            if (app.iconURL) {
-                const appIcon = document.createElement("img");
-                appIcon.src = app.iconURL;
-                appIcon.alt = `${app.name} icon`;
-                appDiv.appendChild(appIcon);
+                        parentElement.appendChild(entryDiv);
+                    }
+                }
             }
 
-            // Append the app to the list
-            appListDiv.appendChild(appDiv);
+            recursivelyDisplayData(data, jsonDataDiv); // Start recursion to display all data
         }
 
         window.onload = populatePanel;
