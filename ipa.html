@@ -18,6 +18,7 @@
         }
         .container {
             text-align: center;
+            max-width: 800px;
         }
         .panel {
             display: none;
@@ -50,16 +51,31 @@
         button:hover {
             background-color: #ff3399;
         }
-        .result {
+        .app-list {
             margin-top: 20px;
-            padding: 15px;
+            width: 100%;
+            padding: 10px;
             border-radius: 8px;
             background-color: #fff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: left;
-            max-width: 80%;
         }
-        img {
+        .app-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .app-item h3 {
+            margin: 5px 0;
+            color: #ff3399;
+        }
+        .app-item p {
+            margin: 3px 0;
+        }
+        .app-item a {
+            color: #4a154b;
+        }
+        .app-item img {
             max-width: 100px;
             margin-top: 10px;
         }
@@ -70,13 +86,7 @@
         <h1>MoonyDev - IPA Repositories</h1>
         <button onclick="togglePanel()">Repository Options</button>
         <div class="panel" id="repoPanel"></div>
-        <div class="result" id="jsonResult" style="display: none;">
-            <h3>Repository Details:</h3>
-            <p id="repoName"></p>
-            <p id="repoSubtitle"></p>
-            <p><a id="repoDownload" href="#" target="_blank">Download</a></p>
-            <img id="repoIcon" src="" alt="Repository Icon">
-        </div>
+        <div class="app-list" id="appList"></div>
     </div>
     <script>
         const repositories = [
@@ -102,26 +112,62 @@
         }
 
         async function fetchRepoData(url) {
-            const resultDiv = document.getElementById("jsonResult");
+            const appListDiv = document.getElementById("appList");
+            appListDiv.innerHTML = ''; // Clear the list before adding new items
+
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                
+                // Parse the JSON response
                 const data = await response.json();
-                displayRepoData(data);
+                console.log("Fetched JSON data:", data); // Debug: inspect fetched JSON
+
+                // Loop through each app in the JSON
+                data.forEach(app => {
+                    displayAppData(app);
+                });
             } catch (error) {
-                console.error("Failed to fetch repository data:", error);
-                alert("Could not load repository data. Ensure the URL provides valid JSON.");
+                console.error("Failed to fetch or parse repository data:", error);
+                alert("Could not load repository data. Check console for details.");
             }
         }
 
-        function displayRepoData(data) {
-            document.getElementById("repoName").textContent = `Name: ${data.name || "N/A"}`;
-            document.getElementById("repoSubtitle").textContent = `Subtitle: ${data.subtitle || "N/A"}`;
-            document.getElementById("repoDownload").href = data.downloadURL || "#";
-            document.getElementById("repoDownload").textContent = data.downloadURL ? "Download" : "No download available";
-            document.getElementById("repoIcon").src = data.iconURL || "";
-            document.getElementById("repoIcon").alt = data.name || "Icon";
-            document.getElementById("jsonResult").style.display = "block";
+        function displayAppData(app) {
+            const appListDiv = document.getElementById("appList");
+
+            // Create a div to display each app's details
+            const appDiv = document.createElement("div");
+            appDiv.classList.add("app-item");
+
+            // Title (name of the app)
+            const appName = document.createElement("h3");
+            appName.textContent = app.name || "Unknown App";
+            appDiv.appendChild(appName);
+
+            // Subtitle (description or additional info)
+            const appSubtitle = document.createElement("p");
+            appSubtitle.textContent = app.subtitle || "No description available.";
+            appDiv.appendChild(appSubtitle);
+
+            // Download link
+            const appDownload = document.createElement("p");
+            const downloadLink = document.createElement("a");
+            downloadLink.href = app.downloadURL || "#";
+            downloadLink.textContent = app.downloadURL ? "Download" : "No download available";
+            appDownload.appendChild(downloadLink);
+            appDiv.appendChild(appDownload);
+
+            // Icon (if available)
+            if (app.iconURL) {
+                const appIcon = document.createElement("img");
+                appIcon.src = app.iconURL;
+                appIcon.alt = `${app.name} icon`;
+                appDiv.appendChild(appIcon);
+            }
+
+            // Append the app to the list
+            appListDiv.appendChild(appDiv);
         }
 
         window.onload = populatePanel;
