@@ -3,104 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON Data Display</title>
+    <title>Repository Options</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fff0f5;
-            color: #4a154b;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
-        h1 {
-            color: #ff66b2;
-        }
-        .json-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            white-space: pre-wrap;
-            text-align: left;
-            font-size: 16px;
-            color: #333;
-        }
-        button {
-            background-color: #ff66b2;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.2em;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        button:hover {
-            background-color: #ff3399;
-        }
+        body { font-family: Arial, sans-serif; }
+        .button { padding: 10px 20px; background-color: #f1c6d3; border: none; cursor: pointer; }
+        #optionsPanel { display: none; margin-top: 20px; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin: 10px 0; }
     </style>
 </head>
 <body>
-    <h1>MoonyDev - IPA Repository Data</h1>
-    <button onclick="loadData()">Load JSON Data</button>
-    <div id="json-container" class="json-container"></div>
+    <h1>IPAs Repositories</h1>
+    <button class="button" id="repositoryButton">Repository Options</button>
+
+    <div id="optionsPanel">
+        <ul id="repoList"></ul>
+    </div>
 
     <script>
-        async function loadData() {
-            const url = "https://ipa.cypwn.xyz/cypwn.json"; // Your JSON URL
-            const container = document.getElementById("json-container");
+        const repositories = [
+            ["AppTesters IPA Repo", "https://repo.apptesters.org/"],
+            ["CyPwn IPA Library", "https://ipa.cypwn.xyz/cypwn.json"],
+            ["CyPwn Trollstore Library", "https://ipa.cypwn.xyz/cypwn_ts.json"],
+            ["MovieBoxPro for AltStore", "https://hann8n.github.io/JackCracks/MovieboxPro.json"],
+            ["Panda App Ru++", "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json"],
+            ["QingSongQian's Repository", "https://qingsongqian.github.io/all.html"],
+            ["Qn_'s AltStore Repo", "https://qnblackcat.github.io/AltStore/apps.json"],
+            ["RandomSource", "https://randomblock1.com/altstore/apps.json"],
+            ["SideStore Team Picks", "https://community-apps.sidestore.io/sidecommunity.json"],
+            ["SpotCompiled", "https://tiny.one/SpotC"],
+            ["WuXu's Library", "https://wuxu1.github.io/wuxu-complete.json"],
+            ["WuXu's Library+)", "https://bit.ly/wuxuslibraryplus"],
+            ["WuXu's Library++", "https://wuxu1.github.io/wuxu-complete-plus.json"],
+            ["ThirdStore Full", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/mainRepo.json"],
+            ["ThirdSource", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/thirdsource.json"]
+        ];
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                // Clear any previous content
-                container.innerHTML = "";
-
-                // Display JSON data in a formatted way
-                displayJson(data, container);
-            } catch (error) {
-                container.innerHTML = "Failed to load data.";
-                console.error("Error loading JSON:", error);
-            }
-        }
-
-        // Recursive function to display nested JSON data
-        function displayJson(data, container, indent = 0) {
-            if (typeof data === 'object' && !Array.isArray(data)) {
-                // Loop through the object properties
-                for (let key in data) {
-                    const value = data[key];
-                    const div = document.createElement("div");
-                    div.style.marginLeft = `${indent * 20}px`;
-                    div.innerHTML = `<strong>${key}:</strong>`;
-
-                    container.appendChild(div);
-
-                    // Recursive call for nested objects
-                    displayJson(value, container, indent + 1);
-                }
-            } else if (Array.isArray(data)) {
-                // Loop through array items
-                data.forEach((item, index) => {
-                    const div = document.createElement("div");
-                    div.style.marginLeft = `${indent * 20}px`;
-                    div.innerHTML = `<strong>[${index}]:</strong>`;
-                    container.appendChild(div);
-
-                    // Recursive call for array items
-                    displayJson(item, container, indent + 1);
-                });
+        document.getElementById('repositoryButton').addEventListener('click', function() {
+            const panel = document.getElementById('optionsPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                fetchRepositories();
             } else {
-                // Display primitive values
-                const div = document.createElement("div");
-                div.style.marginLeft = `${indent * 20}px`;
-                div.innerHTML = `${data}`;
-                container.appendChild(div);
+                panel.style.display = 'none';
             }
+        });
+
+        function fetchRepositories() {
+            const repoList = document.getElementById('repoList');
+            repoList.innerHTML = ''; // Clear existing list items
+
+            repositories.forEach(repo => {
+                fetch(repo[1])
+                    .then(response => response.json())
+                    .then(data => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<strong>${repo[0]}</strong>: <a href="${repo[1]}" target="_blank">Visit</a>`;
+                        
+                        // If the JSON contains specific info, display it
+                        if (data.name) {
+                            listItem.innerHTML += `<br>Repo Name: ${data.name}`;
+                        }
+                        if (data.subtitle) {
+                            listItem.innerHTML += `<br>Subtitle: ${data.subtitle}`;
+                        }
+                        if (data.downloadURL) {
+                            listItem.innerHTML += `<br>Download URL: <a href="${data.downloadURL}" target="_blank">Download</a>`;
+                        }
+                        if (data.iconURL) {
+                            listItem.innerHTML += `<br><img src="${data.iconURL}" alt="Icon" width="50" height="50">`;
+                        }
+                        
+                        repoList.appendChild(listItem);
+                    })
+                    .catch(error => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<strong>${repo[0]}</strong>: Failed to load data.`;
+                        repoList.appendChild(listItem);
+                    });
+            });
         }
     </script>
 </body>
