@@ -59,40 +59,30 @@
             text-align: left;
             max-width: 80%;
         }
+        img {
+            max-width: 100px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>MoonyDev - IPA Repositories</h1>
         <button onclick="togglePanel()">Repository Options</button>
-        <div class="panel" id="repoPanel">
-            <!-- Repositories will be dynamically added here -->
-        </div>
+        <div class="panel" id="repoPanel"></div>
         <div class="result" id="jsonResult" style="display: none;">
             <h3>Repository Details:</h3>
             <p id="repoName"></p>
             <p id="repoSubtitle"></p>
             <p><a id="repoDownload" href="#" target="_blank">Download</a></p>
-            <img id="repoIcon" src="" alt="Repository Icon" style="max-width: 100px;">
+            <img id="repoIcon" src="" alt="Repository Icon">
         </div>
     </div>
     <script>
         const repositories = [
             ["AppTesters IPA Repo", "https://repo.apptesters.org/"],
             ["CyPwn IPA Library", "https://ipa.cypwn.xyz/cypwn.json"],
-            ["CyPwn Trollstore Library", "https://ipa.cypwn.xyz/cypwn_ts.json"],
-            ["MovieBoxPro for AltStore", "https://hann8n.github.io/JackCracks/MovieboxPro.json"],
-            ["Panda App Ru++", "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json"],
-            ["QingSongQian's Repository", "https://qingsongqian.github.io/all.html"],
-            ["Qn_'s AltStore Repo", "https://qnblackcat.github.io/AltStore/apps.json"],
-            ["RandomSource", "https://randomblock1.com/altstore/apps.json"],
-            ["SideStore Team Picks", "https://community-apps.sidestore.io/sidecommunity.json"],
-            ["SpotCompiled", "https://tiny.one/SpotC"],
-            ["WuXu's Library", "https://wuxu1.github.io/wuxu-complete.json"],
-            ["WuXu's Library+)", "https://bit.ly/wuxuslibraryplus"],
-            ["WuXu's Library++", "https://wuxu1.github.io/wuxu-complete-plus.json"],
-            ["ThirdStore Full", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/mainRepo.json"],
-            ["ThirdSource", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/thirdsource.json"]
+            ["CyPwn Trollstore Library", "https://ipa.cypwn.xyz/cypwn_ts.json"]
         ];
 
         function togglePanel() {
@@ -113,20 +103,25 @@
 
         async function fetchRepoData(url) {
             const resultDiv = document.getElementById("jsonResult");
-            resultDiv.style.display = "block";
-
             try {
                 const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
                 const data = await response.json();
-
-                document.getElementById("repoName").textContent = `Name: ${data.name || "N/A"}`;
-                document.getElementById("repoSubtitle").textContent = `Subtitle: ${data.subtitle || "N/A"}`;
-                document.getElementById("repoDownload").href = data.downloadURL || "#";
-                document.getElementById("repoDownload").textContent = "Download";
-                document.getElementById("repoIcon").src = data.iconURL || "";
+                displayRepoData(data);
             } catch (error) {
-                alert("Failed to fetch repository data.");
+                console.error("Failed to fetch repository data:", error);
+                alert("Could not load repository data. Ensure the URL provides valid JSON.");
             }
+        }
+
+        function displayRepoData(data) {
+            document.getElementById("repoName").textContent = `Name: ${data.name || "N/A"}`;
+            document.getElementById("repoSubtitle").textContent = `Subtitle: ${data.subtitle || "N/A"}`;
+            document.getElementById("repoDownload").href = data.downloadURL || "#";
+            document.getElementById("repoDownload").textContent = data.downloadURL ? "Download" : "No download available";
+            document.getElementById("repoIcon").src = data.iconURL || "";
+            document.getElementById("repoIcon").alt = data.name || "Icon";
+            document.getElementById("jsonResult").style.display = "block";
         }
 
         window.onload = populatePanel;
