@@ -69,14 +69,56 @@
             color: #666;
         }
 
-        #jsonOutput {
-            white-space: pre-wrap; /* Keeps formatting in raw JSON */
+        .app-card {
             background-color: #fff;
-            padding: 20px;
-            margin-top: 20px;
             border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-family: 'Courier New', monospace;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff4da6;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .app-description {
+            font-size: 14px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .app-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .app-meta {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .app-meta a {
+            color: #ff4da6;
+            text-decoration: none;
+        }
+
+        .app-meta a:hover {
+            text-decoration: underline;
+        }
+
+        #jsonOutput {
+            display: none;
         }
     </style>
 </head>
@@ -128,7 +170,7 @@
                 listItem.innerHTML = `
                     <div class="repo-title">${repo[0]}</div>
                     <div class="repo-info">
-                        <button class="button" onclick="fetchRepoData('${repo[1]}')">Fetch Data</button>
+                        <button class="button" onclick="fetchRepoData('${repo[1]}')">Fetch Apps</button>
                     </div>
                 `;
                 repoList.appendChild(listItem);
@@ -139,26 +181,41 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    displayRawJson(data);
+                    displayApps(data.apps || []);
                 })
                 .catch(error => {
-                    const jsonOutput = document.getElementById('jsonOutput');
-                    jsonOutput.textContent = 'Error fetching repository data.';
+                    alert(`Error fetching data from ${url}: ${error.message}`);
                 });
         }
 
-        function displayRawJson(data) {
+        function displayApps(apps) {
             const jsonOutput = document.getElementById('jsonOutput');
-            jsonOutput.textContent = JSON.stringify(data, null, 2); // Display raw JSON data
+            jsonOutput.innerHTML = ''; // Clear previous data
+            jsonOutput.style.display = 'block'; // Show the container
 
-            // Optionally, extract apps and display them if they exist
-            if (data.apps) {
-                let appsList = '';
-                data.apps.forEach(app => {
-                    appsList += JSON.stringify(app, null, 2) + '\n\n';
-                });
-                jsonOutput.textContent = appsList; // Overwrite with just the apps in raw form
+            if (apps.length === 0) {
+                jsonOutput.innerHTML = '<p>No apps found in this repository.</p>';
+                return;
             }
+
+            apps.forEach(app => {
+                const appCard = document.createElement('div');
+                appCard.classList.add('app-card');
+
+                appCard.innerHTML = `
+                    <div class="app-meta">
+                        ${app.iconURL ? `<img class="app-icon" src="${app.iconURL}" alt="${app.name} Icon">` : ''}
+                        <div>
+                            <div class="app-title">${app.name || 'Unknown Title'}</div>
+                            <div class="app-subtitle">${app.subtitle || 'No Subtitle Available'}</div>
+                        </div>
+                    </div>
+                    <div class="app-description">${app.description || 'No Description Available'}</div>
+                    ${app.downloadURL ? `<a href="${app.downloadURL}" target="_blank">Download</a>` : ''}
+                `;
+
+                jsonOutput.appendChild(appCard);
+            });
         }
     </script>
 </body>
