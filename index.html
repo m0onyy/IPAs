@@ -34,41 +34,6 @@
             background-color: #ff4da6;
         }
 
-        #optionsPanel {
-            display: none;
-            margin-top: 20px;
-        }
-
-        #repoList {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #repoList li {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
-        }
-
-        #repoList li:hover {
-            transform: scale(1.05);
-        }
-
-        .repo-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #ff4da6;
-        }
-
-        .repo-info {
-            font-size: 14px;
-            color: #666;
-        }
-
         .app-card {
             background-color: #fff;
             border-radius: 8px;
@@ -95,17 +60,17 @@
             margin-top: 10px;
         }
 
-        .app-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 5px;
-            margin-right: 10px;
-        }
-
         .app-meta {
             display: flex;
             align-items: center;
             margin-top: 10px;
+        }
+
+        .app-meta img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-right: 10px;
         }
 
         .app-meta a {
@@ -116,107 +81,81 @@
         .app-meta a:hover {
             text-decoration: underline;
         }
-
-        #jsonOutput {
-            display: none;
-        }
     </style>
 </head>
 <body>
     <h1>IPAs Repositories</h1>
     <button class="button" id="repositoryButton">Repository Options</button>
 
-    <div id="optionsPanel">
-        <ul id="repoList"></ul>
-    </div>
-
-    <div id="jsonOutput"></div>
+    <div id="appContainer"></div>
 
     <script>
+        class AppDetail {
+            constructor(name, subtitle, description, downloadURL, iconURL) {
+                this.name = name;
+                this.subtitle = subtitle || "No subtitle provided.";
+                this.description = description || "No description available.";
+                this.downloadURL = downloadURL || null;
+                this.iconURL = iconURL || null;
+            }
+        }
+
         const repositories = [
             ["AppTesters IPA Repo", "https://repo.apptesters.org/"],
             ["CyPwn IPA Library", "https://ipa.cypwn.xyz/cypwn.json"],
-            ["CyPwn Trollstore Library", "https://ipa.cypwn.xyz/cypwn_ts.json"],
-            ["MovieBoxPro for AltStore", "https://hann8n.github.io/JackCracks/MovieboxPro.json"],
-            ["Panda App Ru++", "https://raw.githubusercontent.com/vizunchik/AltStoreRus/master/apps.json"],
-            ["QingSongQian's Repository", "https://qingsongqian.github.io/all.html"],
-            ["Qn_'s AltStore Repo", "https://qnblackcat.github.io/AltStore/apps.json"],
-            ["RandomSource", "https://randomblock1.com/altstore/apps.json"],
-            ["SideStore Team Picks", "https://community-apps.sidestore.io/sidecommunity.json"],
-            ["SpotCompiled", "https://tiny.one/SpotC"],
-            ["WuXu's Library", "https://wuxu1.github.io/wuxu-complete.json"],
-            ["WuXu's Library+)", "https://bit.ly/wuxuslibraryplus"],
-            ["WuXu's Library++", "https://wuxu1.github.io/wuxu-complete-plus.json"],
-            ["ThirdStore Full", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/mainRepo.json"],
-            ["ThirdSource", "https://github.com/loyahdev/ThirdStore/raw/refs/heads/main/thirdsource.json"]
+            // Add more repository URLs here
         ];
 
-        document.getElementById('repositoryButton').addEventListener('click', function() {
-            const panel = document.getElementById('optionsPanel');
-            if (panel.style.display === 'none') {
-                panel.style.display = 'block';
-                fetchRepositories();
-            } else {
-                panel.style.display = 'none';
+        const fetchAppsFromRepo = async (repoUrl) => {
+            try {
+                const response = await fetch(repoUrl);
+                if (!response.ok) throw new Error(`Failed to fetch: ${response.statusText}`);
+                const json = await response.json();
+                const apps = json.apps || [];
+                return apps.map(app => new AppDetail(
+                    app.name,
+                    app.subtitle,
+                    app.description,
+                    app.downloadURL,
+                    app.iconURL
+                ));
+            } catch (error) {
+                console.error(`Error fetching repository: ${error.message}`);
+                return [];
             }
-        });
+        };
 
-        function fetchRepositories() {
-            const repoList = document.getElementById('repoList');
-            repoList.innerHTML = ''; // Clear existing list items
-
-            repositories.forEach(repo => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    <div class="repo-title">${repo[0]}</div>
-                    <div class="repo-info">
-                        <button class="button" onclick="fetchRepoData('${repo[1]}')">Fetch Apps</button>
-                    </div>
-                `;
-                repoList.appendChild(listItem);
-            });
-        }
-
-        function fetchRepoData(url) {
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    displayApps(data.apps || []);
-                })
-                .catch(error => {
-                    alert(`Error fetching data from ${url}: ${error.message}`);
-                });
-        }
-
-        function displayApps(apps) {
-            const jsonOutput = document.getElementById('jsonOutput');
-            jsonOutput.innerHTML = ''; // Clear previous data
-            jsonOutput.style.display = 'block'; // Show the container
-
-            if (apps.length === 0) {
-                jsonOutput.innerHTML = '<p>No apps found in this repository.</p>';
-                return;
-            }
+        const displayApps = (apps) => {
+            const appContainer = document.getElementById('appContainer');
+            appContainer.innerHTML = ''; // Clear previous apps
 
             apps.forEach(app => {
                 const appCard = document.createElement('div');
                 appCard.classList.add('app-card');
-
                 appCard.innerHTML = `
                     <div class="app-meta">
-                        ${app.iconURL ? `<img class="app-icon" src="${app.iconURL}" alt="${app.name} Icon">` : ''}
+                        ${app.iconURL ? `<img src="${app.iconURL}" alt="${app.name} Icon">` : ''}
                         <div>
-                            <div class="app-title">${app.name || 'Unknown Title'}</div>
-                            <div class="app-subtitle">${app.subtitle || 'No Subtitle Available'}</div>
+                            <div class="app-title">${app.name}</div>
+                            <div class="app-subtitle">${app.subtitle}</div>
                         </div>
                     </div>
-                    <div class="app-description">${app.description || 'No Description Available'}</div>
+                    <div class="app-description">${app.description}</div>
                     ${app.downloadURL ? `<a href="${app.downloadURL}" target="_blank">Download</a>` : ''}
                 `;
-
-                jsonOutput.appendChild(appCard);
+                appContainer.appendChild(appCard);
             });
-        }
+        };
+
+        document.getElementById('repositoryButton').addEventListener('click', async () => {
+            const allApps = [];
+            for (const repo of repositories) {
+                const [, repoUrl] = repo;
+                const apps = await fetchAppsFromRepo(repoUrl);
+                allApps.push(...apps);
+            }
+            displayApps(allApps);
+        });
     </script>
 </body>
 </html>
